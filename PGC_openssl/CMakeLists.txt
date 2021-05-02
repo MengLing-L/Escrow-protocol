@@ -10,14 +10,14 @@ find_package(OpenSSL REQUIRED)
 
 include_directories(${OPENSSL_INCLUDE_DIR})
   
-add_executable(test_escrow_protocol test/test_escrow_protocol.cpp)
+#add_executable(test_escrow_protocol test/test_escrow_protocol.cpp)
 
-target_link_libraries(test_escrow_protocol ${OPENSSL_LIBRARIES})
+#target_link_libraries(test_escrow_protocol ${OPENSSL_LIBRARIES})
 
-add_executable(test_twisted_elgamal test/test_twisted_elgamal.cpp)
+#add_executable(test_twisted_elgamal test/test_twisted_elgamal.cpp)
 
-target_link_libraries(test_twisted_elgamal ${OPENSSL_LIBRARIES})
+#target_link_libraries(test_twisted_elgamal ${OPENSSL_LIBRARIES})
 
-#add_executable(rust_twisted_elgamal test/rust_twisted_elgamal.cpp)
+add_executable(rust_twisted_elgamal test/rust_twisted_elgamal.cpp)
 
-#target_link_libraries(rust_twisted_elgamal ${OPENSSL_LIBRARIES})
+target_link_libraries(rust_twisted_elgamal ${OPENSSL_LIBRARIES})

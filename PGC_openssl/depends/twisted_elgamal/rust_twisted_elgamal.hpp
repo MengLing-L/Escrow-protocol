@@ -53,19 +53,23 @@ struct MR_Twisted_ElGamal_CT
 };
 
 /* allocate memory for PP */ 
-void Twisted_ElGamal_PP_new(Twisted_ElGamal_PP &pp)
+Twisted_ElGamal_PP *Twisted_ElGamal_PP_new()
 { 
-    pp.g = EC_POINT_new(group);
-    pp.h = EC_POINT_new(group); 
-    pp.BN_MSG_SIZE = BN_new(); 
+    Twisted_ElGamal_PP *pp;
+
+    pp = (Twisted_ElGamal_PP *)malloc(sizeof(*pp));
+    pp->g = EC_POINT_new(group);
+    pp->h = EC_POINT_new(group); 
+    pp->BN_MSG_SIZE = BN_new(); 
+    return pp;
 }
 
 /* free memory of PP */ 
-void Twisted_ElGamal_PP_free(Twisted_ElGamal_PP &pp)
+void Twisted_ElGamal_PP_free(Twisted_ElGamal_PP* pp)
 { 
-    EC_POINT_free(pp.g);
-    EC_POINT_free(pp.h);
-    BN_free(pp.BN_MSG_SIZE); 
+    EC_POINT_free(pp->g);
+    EC_POINT_free(pp->h);
+    BN_free(pp->BN_MSG_SIZE); 
 }
 
 void Twisted_ElGamal_KP_new(Twisted_ElGamal_KP &keypair)
@@ -106,12 +110,12 @@ void MR_Twisted_ElGamal_CT_free(MR_Twisted_ElGamal_CT &CT)
     EC_POINT_free(CT.Y);
 }
 
-void Twisted_ElGamal_PP_print(Twisted_ElGamal_PP &pp)
+void Twisted_ElGamal_PP_print(Twisted_ElGamal_PP* pp)
 {
-    cout << "the length of message space = " << pp.MSG_LEN << endl; 
-    cout << "the tunning parameter for fast decryption = " << pp.TUNNING << endl;
-    ECP_print(pp.g, "pp.g"); 
-    ECP_print(pp.h, "pp.h"); 
+    cout << "the length of message space = " << pp->MSG_LEN << endl; 
+    cout << "the tunning parameter for fast decryption = " << pp->TUNNING << endl;
+    ECP_print(pp->g, "pp.g"); 
+    ECP_print(pp->h, "pp.h"); 
 } 
 
 void Twisted_ElGamal_KP_print(Twisted_ElGamal_KP &keypair)
@@ -160,24 +164,24 @@ void MR_Twisted_ElGamal_CT_deserialize(MR_Twisted_ElGamal_CT &CT, ifstream& fin)
 }
 
 /* Setup algorithm */ 
-void Twisted_ElGamal_Setup(Twisted_ElGamal_PP &pp, size_t MSG_LEN, size_t TUNNING, 
+void Twisted_ElGamal_Setup(Twisted_ElGamal_PP* pp, size_t MSG_LEN, size_t TUNNING, 
                            size_t IO_THREAD_NUM, size_t DEC_THREAD_NUM)
 { 
-    pp.MSG_LEN = MSG_LEN; 
-    pp.TUNNING = TUNNING; 
-    pp.IO_THREAD_NUM = IO_THREAD_NUM;
-    pp.DEC_THREAD_NUM = DEC_THREAD_NUM;  
+    pp->MSG_LEN = MSG_LEN; 
+    pp->TUNNING = TUNNING; 
+    pp->IO_THREAD_NUM = IO_THREAD_NUM;
+    pp->DEC_THREAD_NUM = DEC_THREAD_NUM;  
     /* set the message space to 2^{MSG_LEN} */
-    BN_set_word(pp.BN_MSG_SIZE, uint64_t(pow(2, pp.MSG_LEN))); 
+    BN_set_word(pp->BN_MSG_SIZE, uint64_t(pow(2, pp->MSG_LEN))); 
 
     //#ifdef DEBUG
     cout << "message space = [0, ";   
-    cout << BN_bn2hex(pp.BN_MSG_SIZE) << ')' << endl; 
+    cout << BN_bn2hex(pp->BN_MSG_SIZE) << ')' << endl; 
     //#endif
   
-    EC_POINT_copy(pp.g, generator); 
+    EC_POINT_copy(pp->g, generator); 
     /* generate pp.h via deterministic manner */
-    Hash_ECP_to_ECP(pp.g, pp.h); 
+    Hash_ECP_to_ECP(pp->g, pp->h); 
 
     //#ifdef DEBUG
     cout << "generate the public parameters for twisted ElGamal >>>" << endl; 
@@ -233,7 +237,7 @@ void Twisted_ElGamal_Enc(Twisted_ElGamal_PP &pp,
 }
 
 /* Encryption algorithm: compute CT = Enc(pk, m; r): with explicit randomness */ 
-void Twisted_ElGamal_Enc(Twisted_ElGamal_PP &pp, 
+void Twisted_ElGamal_Enc(Twisted_ElGamal_PP* pp, 
                          EC_POINT* &pk, 
                          BIGNUM* &m, 
                          BIGNUM* &r, 
@@ -241,16 +245,16 @@ void Twisted_ElGamal_Enc(Twisted_ElGamal_PP &pp,
 { 
     // begin encryption
     EC_POINT_mul(group, CT.X, NULL, pk, r, bn_ctx); // X = pk^r
-    EC_POINT_mul(group, CT.Y, m, pp.h, r, bn_ctx); // Y = g^r h^m = U
+    EC_POINT_mul(group, CT.Y, r, pp->h, m, bn_ctx); // Y = g^r h^m = U
 
-    #ifdef DEBUG
-        cout << "twisted ElGamal encryption finishes >>>"<< endl;
-        Twisted_ElGamal_CT_print(CT); 
-    #endif
+    //#ifdef DEBUG
+    cout << "twisted ElGamal encryption finishes >>>"<< endl;
+    Twisted_ElGamal_CT_print(CT); 
+    //#endif
 }
 
 /* Decryption algorithm: compute m = Dec(sk, CT) */ 
-void Twisted_ElGamal_Dec(Twisted_ElGamal_PP &pp, 
+void Twisted_ElGamal_Dec(Twisted_ElGamal_PP* pp, 
                          BIGNUM* &sk, 
                          Twisted_ElGamal_CT &CT, 
                          BIGNUM* &m)
@@ -265,7 +269,7 @@ void Twisted_ElGamal_Dec(Twisted_ElGamal_PP &pp,
     EC_POINT_add(group, M, CT.Y, M, bn_ctx);    // M = h^m
 
     //Brute_Search(m, pp.h, M); 
-    bool success = Shanks_DLOG(m, pp.h, M, pp.MSG_LEN, pp.TUNNING); // use Shanks's algorithm to decrypt
+    bool success = Shanks_DLOG(m, pp->h, M, pp->MSG_LEN, pp->TUNNING); // use Shanks's algorithm to decrypt
   
     BN_free(sk_inverse); 
     EC_POINT_free(M);
