@@ -163,18 +163,52 @@ void get_32bit_4bytes_BigNumVec(vector<BIGNUM *> &ret_num, BIGNUM* &m, Twisted_E
 //EC_POINT *A, *S, *T1, *T2;  
 //   BIGNUM *taux, *mu, *tx; 
 //   InnerProduct_Proof ip_proof;
+//struct InnerProduct_Proof
+//{
+//  size of the vector = LOG_VECTOR_LEN
+//    vector<EC_POINT *> vec_L; 
+//   vector<EC_POINT *> vec_R; 
+//    BIGNUM *a; 
+//    BIGNUM *b;     
+//};
 void get_bullet_proof_size(Bullet_Proof &bullet_proof){
     size_t all=0;
-    all = sizeof(*bullet_proof.A) + sizeof(*bullet_proof.S) + sizeof(*bullet_proof.T1) + sizeof(*bullet_proof.T2) 
-        + sizeof(*bullet_proof.taux) + sizeof(*bullet_proof.mu) + sizeof(*bullet_proof.tx);
-    all = all + sizeof(*bullet_proof.ip_proof.a) + sizeof(*bullet_proof.ip_proof.b);
-    for (int i=0; i< bullet_proof.ip_proof.vec_L.size(); i++ ){
-        all = all +  sizeof(*bullet_proof.ip_proof.vec_L[i]);
-    }
-    for (int i=0; i< bullet_proof.ip_proof.vec_R.size(); i++ ){
-        all = all +  sizeof(*bullet_proof.ip_proof.vec_R[i]);
-    }
-    cout << "bullet proof " << all << endl;
+    all += 4*POINT_LEN; //EC_POINT *A, *S, *T1, *T2;
+    all += 3*BN_LEN; //BIGNUM *taux, *mu, *tx;
+    all += 2*BN_LEN; //BIGNUM* a,*b
+    all += bullet_proof.ip_proof.vec_L.size()*POINT_LEN;
+    all += bullet_proof.ip_proof.vec_R.size()*POINT_LEN;
+    cout << "bullet proof's size " << all << endl;
+}
+//// structure of proof 
+//struct Sigma_Proof
+//{
+//   EC_POINT *Y1, *Y2, *Y3; // P's first round message
+//  BIGNUM *z1, *z2;    // P's response in Zq
+//};
+void get_sigma_proof_size(Sigma_Proof &sigma_proof){
+    size_t all=0;
+    all += 3*POINT_LEN; //EC_POINT *Y1, *Y2, *Y3;
+    all += 2*BN_LEN; ; //BIGNUM *z1, *z2; 
+    cout << "sigma proof's size " << all << endl;
+}
+
+void get_ciphertext_size(vector<Twisted_ElGamal_CT> &CT){
+    size_t all=0;
+    all += 2*CT.size()*POINT_LEN; 
+    cout << "Ciphertext's size " << all << endl;
+}
+
+void get_signature_s_size(){
+    size_t all=0;
+    all += BN_LEN; 
+    cout << "Signature s's size " << all << endl;
+}
+
+void get_signature_r_size(){
+    size_t all=0;
+    all += BN_LEN; 
+    cout << "Signature r's size " << all << endl;
 }
 
 void test_escrow_protocol()
@@ -231,9 +265,6 @@ void test_escrow_protocol()
     BIGNUM *m_prime = BN_new();
     BIGNUM *m = BN_new();
 
-    cout << "private message is I'm mengling >>>" << endl;
-    //string private_message = "I'm mengling";
-    //Hash_String_to_BN(private_message, m); 
     BN_hex2bn(&m,"4b688df40bcedbe641ddb16ff0a1842d9c67ea1c3bf63f3e0471baa664531d1a");
     BIGNUM *hash=BN_new();
     BN_print(m, "m");
@@ -245,19 +276,21 @@ void test_escrow_protocol()
     cout << "generate the signature key pair >>>" << endl;
     Signature_KeyGen(signature, signature_instance);
 
-    cout << "generate the signature of m >>>" << endl;
-    cout << "begin count time >>>" << endl;
-    auto sigma_start_time = chrono::steady_clock::now(); // start to count the time
+    cout << "generate the signature of hash >>>" << endl;
+    SplitLine_print('-');
+    cout << "begin count signature generation time >>>" << endl;
+    auto start_time = chrono::steady_clock::now(); // start to count the time
     Signature_Sign(signature, signature_instance, hash, signature_result);
-    
-
+    auto end_time = chrono::steady_clock::now(); // end to count the time
+    auto running_time = end_time - start_time;
+    cout << "Signature generation takes time = "
+    << chrono::duration <double, milli> (running_time).count() << " ms" << endl;
+    SplitLine_print('-');
     cout << "begin the twisted elgamal encryption >>>" << endl;  
-    /* explict random r */
-    SplitLine_print('-'); 
-    cout << "begin the explict random r >>>" << endl; 
-    //BN_mod(signature_result.s, signature_result.s, pp_tt.BN_MSG_SIZE, bn_ctx);
     BN_print(signature_result.s, "signature_result.s"); 
-    
+    cout << "begin count encryption time >>>" << endl;
+    start_time = chrono::steady_clock::now(); // start to count the time
+
     vector<BIGNUM *> split_each_4bytes_m(BN_LEN/4);
     BN_vec_new(split_each_4bytes_m);
     get_32bit_4bytes_BigNumVec(split_each_4bytes_m, signature_result.s, pp_tt);
@@ -278,6 +311,12 @@ void test_escrow_protocol()
         Twisted_ElGamal_Enc(pp_tt, keypair.pk, split_each_4bytes_m[i], each_4bytes_m_beta[i], each_4bytes_m_res_U_V[i]);     
     }
 
+    end_time = chrono::steady_clock::now(); // end to count the time
+    running_time = end_time - start_time;
+    cout << "Encryption takes time = "
+    << chrono::duration <double, milli> (running_time).count() << " ms" << endl;
+    SplitLine_print('-');
+
 
     generate_random_instance_witness(pp, instance, witness, split_each_4bytes_m, each_4bytes_m_beta, true);  
 
@@ -286,26 +325,39 @@ void test_escrow_protocol()
     string sigma_transcript_str; 
 
     cout << "generate the bullet proof >>>" << endl;  
+    cout << "begin count bullet proof generation time >>>" << endl;
+    start_time = chrono::steady_clock::now(); // start to count the time
     transcript_str = ""; 
     Bullet_Prove(pp, instance, witness, transcript_str, proof);
-    get_bullet_proof_size(proof);
+    end_time = chrono::steady_clock::now(); // end to count the time
+    running_time = end_time - start_time;
+    cout << "Bullet proof generation takes time = "
+    << chrono::duration <double, milli> (running_time).count() << " ms" << endl;
     SplitLine_print('-');
+
     cout << "generate the sigma proof >>>" << endl; 
+    cout << "begin count sigma proof generation time >>>" << endl;
+    start_time = chrono::steady_clock::now(); // start to count the time
     sigma_transcript_str = ""; 
     Sigma_Prove(sigma, sigma_instance, sigma_witness, sigma_transcript_str, sigma_proof);
+    end_time = chrono::steady_clock::now(); // end to count the time
+    running_time = end_time - start_time;
+    cout << "Sigma proof generation takes time = "
+    << chrono::duration <double, milli> (running_time).count() << " ms" << endl;
     SplitLine_print('-');
-    auto sigma_end_time = chrono::steady_clock::now(); // end to count the time
-    auto sigma_running_time = sigma_end_time - sigma_start_time;
+    get_bullet_proof_size(proof);
+    get_sigma_proof_size(sigma_proof);
+    get_ciphertext_size(each_4bytes_m_res_U_V);
+    get_signature_s_size();
+    get_signature_r_size();
     SplitLine_print('-');
     
-    cout << "proof generation , encryption, signature generation takes time = "
-    << chrono::duration <double, milli> (sigma_running_time).count() << " ms" << endl;
-    SplitLine_print('-');
-    sigma_start_time = chrono::steady_clock::now(); // start to count the time
-    cout << "verify the signature >>>" << endl; 
+    //cout << "verify the signature >>>" << endl; 
     //Signature_Verify(signature, signature_instance, hash, signature_result);
     //cout << "--------" << endl;
     cout << "Twited ElGamal decryption >>>" << endl;
+    cout << "begin count Twited ElGamal decryption time >>>" << endl;
+    start_time = chrono::steady_clock::now();
     vector<BIGNUM *> m_recoverys(BN_LEN/4);
     BN_vec_new(m_recoverys);
     for(int i=0; i<each_4bytes_m_res_U_V.size(); i++){
@@ -313,20 +365,34 @@ void test_escrow_protocol()
         BN_print(m_recoverys[i], "m'");
     }
     recovery_bignum_from_dec_nums(m_recoverys, signature_result.s, pp_tt);
+    end_time = chrono::steady_clock::now(); // end to count the time
+    running_time = end_time - start_time;
+    cout << "Twited ElGamal decryption takes time = "
+    << chrono::duration <double, milli> (running_time).count() << " ms" << endl;
     SplitLine_print('-');
+
     transcript_str = ""; 
     cout << "verify the bullet proof >>>" << endl; 
+    cout << "begin count bullet proof verification time >>>" << endl;
+    start_time = chrono::steady_clock::now();
     Bullet_Verify(pp, instance, transcript_str, proof);
+    end_time = chrono::steady_clock::now(); // end to count the time
+    running_time = end_time - start_time;
+    cout << "Bullet proof verification takes time = "
+    << chrono::duration <double, milli> (running_time).count() << " ms" << endl;
     SplitLine_print('-');
-    cout << "verify the sigma proof >>>" << endl; 
+
+    cout << "verify the sigma proof >>>" << endl;
+    cout << "begin count Sigma proof verification time >>>" << endl;
+    start_time = chrono::steady_clock::now(); 
     sigma_transcript_str = ""; 
     Sigma_Verify(sigma, sigma_instance, sigma_transcript_str, sigma_proof);
-    sigma_end_time = chrono::steady_clock::now(); // end to count the time
-    sigma_running_time = sigma_end_time - sigma_start_time;
+    end_time = chrono::steady_clock::now(); // end to count the time
+    running_time = end_time - start_time;
+    cout << "Sigma proof verification takes time = "
+    << chrono::duration <double, milli> (running_time).count() << " ms" << endl;
     SplitLine_print('-');
-    cout << "proof verification, signature verification takes time = " 
-    << chrono::duration <double, milli> (sigma_running_time).count() << " ms" << endl;
-    SplitLine_print('-');
+
     Signature_PP_free(signature);
     Signature_Instance_free(signature_instance);
     Signature_Result_free(signature_result);
