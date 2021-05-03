@@ -82,6 +82,76 @@ extern "C"{
 }
 
 extern "C"{
+    void Rust_Twisted_ElGamal_HomoAdd(
+        Twisted_ElGamal_PP *pp, 
+        EC_POINT* X1,
+        EC_POINT* Y1, 
+        EC_POINT* X2,
+        EC_POINT* Y2,
+        EC_POINT* X_ret,
+        EC_POINT* Y_ret
+    ){
+        Twisted_ElGamal_CT CT1; 
+        Twisted_ElGamal_CT_new(CT1); 
+        //SplitLine_print('-');
+        EC_POINT_copy(CT1.X, X1);
+        EC_POINT_copy(CT1.Y, Y1);
+
+        Twisted_ElGamal_CT CT2; 
+        Twisted_ElGamal_CT_new(CT2);
+
+        EC_POINT_copy(CT2.X, X2);
+        EC_POINT_copy(CT2.Y, Y2);
+
+        Twisted_ElGamal_CT CT_ret; 
+        Twisted_ElGamal_CT_new(CT_ret);
+
+        Twisted_ElGamal_HomoAdd(CT_ret, CT1, CT2);
+        EC_POINT_copy(X_ret, CT_ret.X);
+        EC_POINT_copy(Y_ret, CT_ret.Y);
+        
+        Twisted_ElGamal_CT_free(CT1);
+        Twisted_ElGamal_CT_free(CT2); 
+        Twisted_ElGamal_CT_free(CT_ret);
+    }
+}
+
+extern "C"{
+    void Rust_Twisted_ElGamal_HomoSub(
+        Twisted_ElGamal_PP *pp, 
+        EC_POINT* X1,
+        EC_POINT* Y1, 
+        EC_POINT* X2,
+        EC_POINT* Y2,
+        EC_POINT* X_ret,
+        EC_POINT* Y_ret
+    ){
+        Twisted_ElGamal_CT CT1; 
+        Twisted_ElGamal_CT_new(CT1); 
+        //SplitLine_print('-');
+        EC_POINT_copy(CT1.X, X1);
+        EC_POINT_copy(CT1.Y, Y1);
+
+        Twisted_ElGamal_CT CT2; 
+        Twisted_ElGamal_CT_new(CT2);
+
+        EC_POINT_copy(CT2.X, X2);
+        EC_POINT_copy(CT2.Y, Y2);
+
+        Twisted_ElGamal_CT CT_ret; 
+        Twisted_ElGamal_CT_new(CT_ret);
+
+        Twisted_ElGamal_HomoSub(CT_ret, CT1, CT2);
+        EC_POINT_copy(X_ret, CT_ret.X);
+        EC_POINT_copy(Y_ret, CT_ret.Y);
+        
+        Twisted_ElGamal_CT_free(CT1);
+        Twisted_ElGamal_CT_free(CT2); 
+        Twisted_ElGamal_CT_free(CT_ret);
+    }
+}
+
+extern "C"{
     void Rust_Twisted_ElGamal_PP_free(Twisted_ElGamal_PP *pp){
         Twisted_ElGamal_PP_free(pp);
     }
