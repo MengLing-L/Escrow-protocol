@@ -13,15 +13,13 @@
 
 The current implementation is based on OpenSSL library. See the installment instructions of OpenSSL as below:  
 
-1. Download [openssl-master.zip](https://github.com/openssl/openssl.git)
-
-2. make a directory "openssl" to save the source codes of MIRACL
+1. Clone the code [openssl-master](https://github.com/openssl/openssl.git)
 
 ```
     git clone https://github.com/openssl/openssl.git
 ```
 
-3. install openssl on your machine
+2. install openssl on your machine
 
 ```
     ./config --prefix=/usr/local/ssl shared
