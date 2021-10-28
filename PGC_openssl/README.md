@@ -6,7 +6,7 @@
 
 - Requires: OpenSSL
 
-- The default elliptic curve is "NID_X9_62_prime256v1"
+- The default elliptic curve is "NID_secp256k1"
 
 
 ## Installation
