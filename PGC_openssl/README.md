@@ -40,6 +40,7 @@ The current implementation is based on OpenSSL library. See the installment inst
 To compile and test the system, do the following: 
 
 ```
+  $ cd {PATH}/Escrow-protocol/PGC_openssl/
   $ mkdir build && cd build
   $ cmake ..
   $ make
