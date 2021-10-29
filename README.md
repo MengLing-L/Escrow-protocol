@@ -1,13 +1,44 @@
-# libPGC: a C++ library for Pretty Good Confidential Transaction System
+## Specifications
 
-This library implements PGC, a **transparent** confidential transaction system with **accountability**, whose security relies only on *discrete logarithm problem* (https://eprint.iacr.org/2019/319).
+- OS: Linux x64, MAC OS x64
 
-<font color =red>**WARNING:**</font> 
-This library provides two implementations in C++, one is based on MIRACL, the other one is based on OpenSSL. The one based on MIRACL is easy to follow but a bit slow. (A brand new version of MIRACL will come soon. Looking forward to it.) The one based on OpenSSL is fast but hard to follow (due to the syntax and design of OpenSSL). Compared to the MIRACL-version, the OpenSSL version also incorporates many refinements, such as correct design of hash functions, faster implementation of DLP algorithm etc. Note that both of them are only academic proof-of-concept prototype, and in particular have not received careful code review or being fully optimized, thus they are NOT ready for production use.
+- Language: C++
 
----
+- Requires: OpenSSL
 
-## License
+- The default elliptic curve is "NID_secp256k1"
 
-This library is licensed under the [MIT License](LICENSE).
+
+## Installation
+
+The current implementation is based on OpenSSL library. See the installment instructions of OpenSSL as below:  
+
+1. Clone the code [openssl-master](https://github.com/openssl/openssl.git)
+
+```
+    git clone https://github.com/openssl/openssl.git
+```
+
+2. install openssl on your machine
+
+```
+    ./config --prefix=/usr/local/ssl shared
+    make 
+    sudo make install
+    export OPENSSL_ROOT_DIR=/usr/local/ssl/
+```
+
+
+## Testing
+
+
+To compile and test the system, do the following: 
+
+```
+  $ cd {PATH}/Escrow-protocol/PGC_openssl/
+  $ mkdir build && cd build
+  $ cmake ..
+  $ make
+  $ ./test_escrow_protocol
+```
 
