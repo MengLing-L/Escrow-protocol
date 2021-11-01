@@ -42,3 +42,13 @@ To compile and test the system, do the following:
   $ ./test_escrow_protocol
 ```
 
+## Our contribution
+
+1. Escrow Protocol https://github.com/MengLing-L/Escrow-protocol/blob/master/PGC_openssl/test/test_escrow_protocol.cpp
+
+2. Sigma Protocol https://github.com/MengLing-L/Escrow-protocol/tree/master/PGC_openssl/depends/sigma
+
+3. Signature Algorithm https://github.com/MengLing-L/Escrow-protocol/tree/master/PGC_openssl/depends/signature
+
+
+
