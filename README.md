@@ -1,4 +1,4 @@
-We provide two ways to deploy the system.
+We provide two ways to deploy the system. The first one uses Docker to deploy the system where you can pull our image mengling333666/meng:escrow, and then can directly run our system without installing OpenSSL and compiling our code. The second one provides the detailed steps for you to directly deploy our system to your OS.
 
 ## Docker
 1. Install Docker. Official guideline (https://docs.docker.com/get-docker/)
@@ -15,7 +15,9 @@ We provide two ways to deploy the system.
     cd /home/Escrow-protocol/PGC_openssl/build
     ./test_escrow_protocol
 ```
-## Direct Deployent Specifications
+## Direct Deployent 
+
+### Specifications
 
 - OS: Linux x64, MAC OS x64
 
