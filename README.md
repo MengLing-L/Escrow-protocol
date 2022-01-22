@@ -15,7 +15,7 @@ We provide two ways to deploy the system.
     cd /home/Escrow-protocol/PGC_openssl/build
     ./test_escrow_protocol
 ```
-## Specifications
+## Direct Deployent Specifications
 
 - OS: Linux x64, MAC OS x64
 
@@ -26,7 +26,7 @@ We provide two ways to deploy the system.
 - The default elliptic curve is "NID_secp256k1"
 
 
-## Installation
+### Installation
 
 The current implementation is based on OpenSSL library. See the installment instructions of OpenSSL as below:  
 
@@ -46,7 +46,7 @@ The current implementation is based on OpenSSL library. See the installment inst
 ```
 
 
-## Testing
+### Testing
 
 
 To compile and test the system, do the following: 
