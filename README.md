@@ -1,3 +1,20 @@
+We provide two ways to deploy the system.
+
+## Docker
+1. Install Docker. Official guideline (https://docs.docker.com/get-docker/)
+2. Pull our image.
+```
+    docker pull mengling333666/meng:escrow
+```
+4. Run the container.
+```
+    docker run -it mengling333666/meng:escrow /bin/bash
+```
+6. Run our protocol.
+```
+    cd /home/Escrow-protocol/PGC_openssl/build
+    ./test_escrow_protocol
+```
 ## Specifications
 
 - OS: Linux x64, MAC OS x64
