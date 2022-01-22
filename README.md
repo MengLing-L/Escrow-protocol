@@ -1,4 +1,4 @@
-We provide two ways to deploy the system. The first one uses Docker to deploy the system where you can pull our image mengling333666/meng:escrow, and then can directly run our system without installing OpenSSL and compiling our code. The second one provides the detailed steps for you to directly deploy our system to your OS.
+We provide two ways to deploy and run our system. The first one uses Docker to run our system where you can pull our image mengling333666/meng:escrow, and then you can directly run our system without installing OpenSSL and compiling our code. The second one provides the detailed steps for you to directly deploy our system to your OS.
 
 ## Docker
 1. Install Docker. Official guideline (https://docs.docker.com/get-docker/)
